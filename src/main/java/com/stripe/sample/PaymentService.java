@@ -1,8 +1,8 @@
 package com.stripe.sample;
 
 import java.time.Instant;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 import com.stripe.StripeClient;
 import com.stripe.model.Event;
@@ -46,8 +46,10 @@ public final class PaymentService {
         .setCancelUrl(baseUrl + "/cancel.html?order_id=" + order.id)
         .setClientReferenceId(order.id)
         .putMetadata("orderNo", order.id)
+        // 支付意图
         .setPaymentIntentData(SessionCreateParams.PaymentIntentData.builder()
             .putMetadata("orderNo", order.id).build())
+        // 过期时间
         .setExpiresAt(order.expiresAt)
         .setIntegrationIdentifier("payment_demo_etkplgpk")
         .addLineItem(SessionCreateParams.LineItem.builder()
@@ -76,7 +78,8 @@ public final class PaymentService {
   }
 
   public List<Order> listOrders(String userId, int page) throws Exception {
-    if (page < 0 || page > 100000) throw new IllegalArgumentException("Invalid page");
+    if (page < 0 || page > 100000)
+      throw new IllegalArgumentException("Invalid page");
     // 多取一条用于判断是否还有下一页；归属来自已认证的用户 ID。
     return userId == null ? List.of() : orders.findByUserId(userId, 21, page * 20);
   }
