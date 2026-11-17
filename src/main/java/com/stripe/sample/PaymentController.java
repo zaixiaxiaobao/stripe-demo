@@ -1,6 +1,5 @@
 package com.stripe.sample;
 
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.List;
@@ -80,17 +79,11 @@ public class PaymentController {
   }
 
   @PostMapping("/webhook")
-  public ResponseEntity<?> webhook(@RequestBody(required = false) byte[] rawBody,
-      @RequestHeader(value = "Stripe-Signature", required = false) String signature) throws Exception {
-    if (signature == null) {
-      return error(HttpStatus.BAD_REQUEST, "Missing signature");
-    }
-    if (rawBody == null || rawBody.length == 0) {
-      return error(HttpStatus.BAD_REQUEST, "Invalid webhook");
-    }
+  public ResponseEntity<?> webhook(@RequestBody String rawBody,
+      @RequestHeader("Stripe-Signature") String signature) throws Exception {
     try {
-      // 原始请求字节以 UTF-8 解码；先解析 JSON 再序列化会导致签名改变。
-      payments.webhook(new String(rawBody, StandardCharsets.UTF_8), signature);
+      // 直接用原始请求体字符串验签，不先解析 JSON 再序列化。
+      payments.webhook(rawBody, signature);
     } catch (SignatureVerificationException | IllegalArgumentException | JsonParseException e) {
       return error(HttpStatus.BAD_REQUEST, "Invalid webhook");
     }
