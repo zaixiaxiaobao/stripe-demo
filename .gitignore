@@ -4,7 +4,7 @@ data/
 .env.*
 !.env.example
 
-# Local IDE settings, database files and logs
+# 本地 IDE 设置、数据库文件和日志
 .vscode/
 .idea/
 *.iml
@@ -12,5 +12,5 @@ data/
 *.trace.db
 *.log
 
-# Original sample archive; track the extracted sources instead
+# 原始示例压缩包，仅将解压后的源码纳入版本控制
 stripe-sample-code.zip

@@ -2,7 +2,7 @@ package com.stripe.sample;
 
 public final class Order {
   public String id;
-  String owner;
+  String userId;
   public String productName;
   public long quantity;
   public long unitAmount;

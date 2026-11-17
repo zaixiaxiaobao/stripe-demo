@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#23483f">
+  <title>登录与注册 · 纸间书店</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="auth.js" defer></script>
+  <script src="login.js" defer></script>
+</head>
+<body>
+  <header class="site-header wrap"><a class="brand" href="checkout.html"><span class="brand-mark" aria-hidden="true">纸</span><span>纸间<span class="brand-en">PAPER & CO.</span></span></a><a class="header-link" href="checkout.html">返回书店 ↗</a></header>
+  <main class="account-main wrap"><div class="result-heading"><span class="eyebrow">YOUR READING ROOM / 我的纸间</span><h1>好书与记录，<br><em>都为你留在这里。</em></h1><p>登录同一账号，在不同浏览器查看自己的订单。</p></div>
+    <section class="account-card" aria-labelledby="account-title"><div class="account-tabs" role="group" aria-label="选择登录或注册"><button type="button" id="login-tab" aria-pressed="true">登录</button><button type="button" id="register-tab" aria-pressed="false">注册账号</button></div><h2 id="account-title">欢迎回到纸间</h2><form id="account-form"><label for="email">邮箱地址</label><input type="email" id="email" name="email" autocomplete="username" maxlength="254" placeholder="you@example.com" required><label for="password">密码</label><input type="password" id="password" name="password" autocomplete="current-password" placeholder="请输入密码" required><p class="password-note" id="password-note" hidden>至少 8 个字符；较长或包含中文的密码不超过 72 字节。</p><div id="confirm-field" hidden><label for="confirm-password">确认密码</label><input type="password" id="confirm-password" autocomplete="new-password" placeholder="再次输入密码"></div><p class="feedback" id="account-message" role="status" aria-live="polite"></p><button class="button button-primary" id="account-submit" type="submit">登录</button></form><p class="account-footnote">订单绑定你的账号。服务重启或更换浏览器后，重新登录即可查看。</p></section>
+  </main>
+  <footer class="site-footer wrap"><span>© 2026 纸间 PAPER & CO.</span><span>给生活，留一页空白。</span><span>支付由 <strong>stripe</strong> 提供支持</span></footer>
+</body>
+</html>

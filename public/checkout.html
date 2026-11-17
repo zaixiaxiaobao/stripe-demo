@@ -1,24 +1,40 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Buy cool new product</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="checkout.js" defer></script>
-  </head>
-  <body>
-    <section>
-      <div class="product">
-        <img src="https://i.imgur.com/EHyR2nP.png" alt="The cover of Stubborn Attachments" />
-        <div class="description">
-          <h3>Stubborn Attachments</h3>
-          <h5>$20.00</h5>
-        </div>
-      </div>
-      <form action="/create-checkout-session" method="POST">
-        <button type="submit" id="checkout-button">Checkout</button>
-      </form>
-      <p id="checkout-message" role="status"></p>
-    </section>
-  </body>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#23483f">
+  <title>Stubborn Attachments · 纸间书店</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="auth.js" defer></script>
+  <script src="checkout.js" defer></script>
+</head>
+<body>
+  <header class="site-header wrap">
+    <a class="brand" href="checkout.html" aria-label="纸间书店首页"><span class="brand-mark" aria-hidden="true">纸</span><span>纸间<span class="brand-en">PAPER & CO.</span></span></a>
+    <nav class="header-nav" aria-label="主导航"><a href="checkout.html">本期书选</a><a href="orders.html">我的订单</a><span id="account-menu" class="account-menu"></span></nav>
+  </header>
+  <main class="wrap storefront">
+    <div class="breadcrumb">纸间书店 <span>/</span> 本期书选</div>
+    <div class="product-layout">
+      <section class="book-stage" aria-label="商品封面">
+        <span class="stage-label">THE READING ROOM <span>NO. 001</span></span>
+        <div class="book-scene"><div class="book-object"><div class="book-spine"></div><div class="book-cover"><span class="cover-top">A LITTLE ROOM FOR WORDS</span><div class="cover-title">STUBBORN<br>ATTACHMENTS<span class="cover-rule"></span></div><div class="cover-art" aria-hidden="true"><i></i><i></i><i></i></div><span class="cover-bottom">一本书，一段自己的时间。</span></div></div></div>
+        <div class="stage-caption"><span>给阅读留一点空白。</span><span>01 — 纸间书选</span></div>
+      </section>
+      <section class="product-info" aria-labelledby="product-title">
+        <span class="eyebrow">PAPER & CO. / 本期书选</span>
+        <h1 id="product-title">Stubborn<br><em>Attachments</em></h1>
+        <p class="product-intro">把生活调慢一页。<br>为值得停留的文字，留一点时间。</p>
+        <div class="product-price"><span class="price-value">$20<span>.00</span></span><span class="currency-badge">USD</span></div>
+        <div class="fine-divider"></div>
+        <div class="product-specs"><div><span>商品名称</span><strong>Stubborn Attachments</strong></div><div><span>购买数量</span><strong>1 件</strong></div><div><span>结算币种</span><strong>美元 USD</strong></div></div>
+        <div class="checkout-box"><div class="total-row"><span>应付总额</span><strong>US$20.00</strong></div><form action="/create-checkout-session" method="POST"><button class="button button-primary" type="submit" id="checkout-button"><span>前往结账</span><span aria-hidden="true">↗</span></button></form><p id="checkout-message" class="feedback" role="status" aria-live="polite"></p><p class="checkout-note"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>下一步进入 Stripe 托管收银台</p></div>
+        <p class="demo-note">这是一个一次性付款示例。订单付款状态将在付款后自动更新，当前不包含配送或权益开通流程。</p>
+      </section>
+    </div>
+    <section class="reading-note"><span class="eyebrow">A NOTE FROM PAPER & CO.</span><p>阅读不必匆忙，<br class="mobile-break">好文字值得慢慢相遇。</p><span class="note-flower" aria-hidden="true">✳</span></section>
+  </main>
+  <footer class="site-footer wrap"><span>© 2026 纸间 PAPER & CO.</span><span>给生活，留一页空白。</span><span>支付由 <strong>stripe</strong> 提供支持</span></footer>
+</body>
 </html>

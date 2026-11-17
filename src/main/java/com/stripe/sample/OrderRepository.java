@@ -7,9 +7,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-/** File-backed H2 is intended for this single-process demo, not a shared production database. */
+/** 文件型 H2 仅用于此单进程示例，不适合作为生产环境的共享数据库。 */
 public final class OrderRepository {
   private final String url;
 
@@ -25,6 +27,9 @@ public final class OrderRepository {
           + "UNIQUE(owner, request_key))");
       s.execute("CREATE TABLE IF NOT EXISTS payment_event (id VARCHAR(255) PRIMARY KEY, "
           + "order_id VARCHAR(36) NOT NULL, processed_at BIGINT NOT NULL)");
+      // 旧匿名订单保留，但没有经过认证的用户归属，不自动认领。
+      s.execute("ALTER TABLE payment_order ADD COLUMN IF NOT EXISTS user_id VARCHAR(36)");
+      s.execute("CREATE INDEX IF NOT EXISTS idx_payment_order_user ON payment_order(user_id,created_at)");
     }
   }
 
@@ -32,11 +37,11 @@ public final class OrderRepository {
     return DriverManager.getConnection(url, "sa", "");
   }
 
-  public synchronized Order createOrGet(String owner, String requestKey) throws SQLException {
+  public synchronized Order createOrGet(String userId, String requestKey) throws SQLException {
     try (Connection c = connect()) {
       try (PreparedStatement s = c.prepareStatement(
-          "SELECT * FROM payment_order WHERE owner=? AND request_key=?")) {
-        s.setString(1, owner);
+          "SELECT * FROM payment_order WHERE user_id=? AND request_key=?")) {
+        s.setString(1, userId);
         s.setString(2, requestKey);
         try (ResultSet r = s.executeQuery()) {
           if (r.next()) return read(r);
@@ -45,13 +50,14 @@ public final class OrderRepository {
       long now = Instant.now().getEpochSecond();
       String id = UUID.randomUUID().toString();
       try (PreparedStatement s = c.prepareStatement("INSERT INTO payment_order "
-          + "(id,owner,request_key,product_name,quantity,unit_amount,amount,currency,status,payment_status,created_at,expires_at) "
-          + "VALUES (?,?,?,'Stubborn Attachments',1,2000,2000,'usd','PENDING_PAYMENT','UNPAID',?,?)")) {
+          + "(id,owner,request_key,product_name,quantity,unit_amount,amount,currency,status,payment_status,created_at,expires_at,user_id) "
+          + "VALUES (?,?,?,'Stubborn Attachments',1,2000,2000,'usd','PENDING_PAYMENT','UNPAID',?,?,?)")) {
         s.setString(1, id);
-        s.setString(2, owner);
+        s.setString(2, userId);
         s.setString(3, requestKey);
         s.setLong(4, now);
         s.setLong(5, now + 3600);
+        s.setString(6, userId);
         s.executeUpdate();
       }
       return find(c, id, false);
@@ -60,6 +66,21 @@ public final class OrderRepository {
 
   public Order find(String id) throws SQLException {
     try (Connection c = connect()) { return find(c, id, false); }
+  }
+
+  /** 只查询已登录用户的订单，按创建时间倒序分页。 */
+  public List<Order> findByUserId(String userId, int limit, int offset) throws SQLException {
+    try (Connection c = connect(); PreparedStatement s = c.prepareStatement(
+        "SELECT * FROM payment_order WHERE user_id=? ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?")) {
+      s.setString(1, userId);
+      s.setInt(2, limit);
+      s.setInt(3, offset);
+      try (ResultSet r = s.executeQuery()) {
+        List<Order> result = new ArrayList<>();
+        while (r.next()) result.add(read(r));
+        return result;
+      }
+    }
   }
 
   private Order find(Connection c, String id, boolean lock) throws SQLException {
@@ -83,7 +104,7 @@ public final class OrderRepository {
     }
   }
 
-  /** Event receipt and payment transition commit together; PAID is never downgraded. */
+  /** 通知处理记录与支付状态变更在同一事务中提交，已付款状态不会被降级。 */
   public void applyEvent(String eventId, String id, String sessionId, String paymentIntentId,
       String status, String paymentStatus) throws SQLException {
     try (Connection c = connect()) {
@@ -131,7 +152,7 @@ public final class OrderRepository {
   private Order read(ResultSet r) throws SQLException {
     Order o = new Order();
     o.id = r.getString("id");
-    o.owner = r.getString("owner");
+    o.userId = r.getString("user_id");
     o.productName = r.getString("product_name");
     o.quantity = r.getLong("quantity");
     o.unitAmount = r.getLong("unit_amount");

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#23483f">
+  <title>我的订单 · 纸间书店</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="auth.js" defer></script>
+  <script src="orders.js" defer></script>
+</head>
+<body>
+  <header class="site-header wrap">
+    <a class="brand" href="checkout.html" aria-label="纸间书店首页"><span class="brand-mark" aria-hidden="true">纸</span><span>纸间<span class="brand-en">PAPER & CO.</span></span></a>
+    <nav class="header-nav" aria-label="主导航"><a href="checkout.html">本期书选</a><a href="orders.html" aria-current="page">我的订单</a><span id="account-menu" class="account-menu"></span></nav>
+  </header>
+  <main class="wrap orders-main">
+    <div class="breadcrumb"><a href="checkout.html">纸间书店</a> <span>/</span> 我的订单</div>
+    <div class="orders-heading"><div><span class="eyebrow">YOUR ORDERS / 购买记录</span><h1>我的订单<span class="heading-dot">.</span></h1><p>每一次与好书相遇，都在这里留下记录。</p></div><button class="button button-secondary" id="refresh-orders" type="button">刷新订单 <span aria-hidden="true">↻</span></button></div>
+    <div class="orders-notice"><span class="notice-mark" aria-hidden="true">i</span><p>这里展示当前登录账号的订单。更换浏览器或服务重启后，重新登录同一账号即可查看。</p></div>
+    <section class="orders-panel" aria-label="订单列表" aria-busy="true" id="orders-panel">
+      <div class="orders-panel-header"><h2>购买记录</h2><span id="orders-count">正在读取</span></div>
+      <p class="orders-message" id="orders-message" role="status" aria-live="polite">正在读取你的订单，请稍候…</p>
+      <div id="orders-list" hidden></div>
+      <div class="orders-empty" id="orders-empty" hidden><span class="empty-book" aria-hidden="true">▤</span><span class="eyebrow">YOUR NEXT CHAPTER</span><h2>下一本好书，还在等你</h2><p>你的账号还没有订单。<br>从本期书选开始，给自己留一点阅读时间。</p><a href="checkout.html" class="button button-primary">去看看本期书选 <span aria-hidden="true">↗</span></a></div>
+      <div class="orders-pagination" id="orders-pagination" hidden><span id="page-label">第 1 页</span><div><button class="page-button" id="previous-page" type="button" disabled>← 上一页</button><button class="page-button" id="next-page" type="button" disabled>下一页 →</button></div></div>
+    </section>
+    <div class="orders-bottom"><p>付款状态以订单确认结果为准。点击「查看详情」可查看单笔订单及付款进度。</p><a href="checkout.html">继续逛逛书店 <span aria-hidden="true">↗</span></a></div>
+  </main>
+  <footer class="site-footer wrap"><span>© 2026 纸间 PAPER & CO.</span><span>给生活，留一页空白。</span><span>支付由 <strong>stripe</strong> 提供支持</span></footer>
+  <template id="order-row-template"><article class="order-row"><div class="order-row-top"><span>订单编号 <span class="list-order-number"></span></span><time class="list-order-time"></time></div><div class="order-row-body"><div class="list-product"><div class="mini-book" aria-hidden="true">STUBBORN<br>ATTACHMENTS</div><div><h3 class="list-product-name"></h3><span class="list-quantity"></span></div></div><div class="list-price"><span class="list-field-label">订单金额</span><strong></strong></div><div class="list-status"><span class="list-field-label">付款状态</span><span class="list-state-pill"></span></div><a class="order-detail-link">查看详情 <span aria-hidden="true">↗</span></a></div></article></template>
+</body>
+</html>

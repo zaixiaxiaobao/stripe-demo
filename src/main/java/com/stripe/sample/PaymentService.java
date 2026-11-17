@@ -2,54 +2,40 @@ package com.stripe.sample;
 
 import java.time.Instant;
 import java.util.UUID;
+import java.util.List;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.stripe.StripeClient;
 import com.stripe.model.Event;
+import com.stripe.model.StripeObject;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.RequestOptions;
 import com.stripe.net.Webhook;
 import com.stripe.param.checkout.SessionCreateParams;
 
 public final class PaymentService {
-  interface Gateway {
-    Session create(SessionCreateParams params, RequestOptions options) throws Exception;
-    Session retrieve(String sessionId) throws Exception;
-  }
-
-  static Gateway stripeGateway(StripeClient client) {
-    return new Gateway() {
-      public Session create(SessionCreateParams params, RequestOptions options) throws Exception {
-        return client.v1().checkout().sessions().create(params, options);
-      }
-      public Session retrieve(String id) throws Exception {
-        return client.v1().checkout().sessions().retrieve(id);
-      }
-    };
-  }
-
   private final OrderRepository orders;
-  private final Gateway gateway;
+  private final StripeClient client;
   private final String baseUrl;
   private final String webhookSecret;
 
-  PaymentService(OrderRepository orders, Gateway gateway, String baseUrl, String webhookSecret) {
+  PaymentService(OrderRepository orders, StripeClient client, String baseUrl, String webhookSecret) {
     this.orders = orders;
-    this.gateway = gateway;
+    this.client = client;
     this.baseUrl = baseUrl;
     this.webhookSecret = webhookSecret;
   }
 
-  public Order checkout(String owner, String requestKey) throws Exception {
+  public Order checkout(String userId, String requestKey) throws Exception {
     if (requestKey == null || !requestKey.matches("[0-9a-fA-F-]{36}")) {
       throw new IllegalArgumentException("A UUID requestKey is required");
     }
     UUID.fromString(requestKey);
-    Order order = orders.createOrGet(owner, requestKey);
-    if (!"PENDING_PAYMENT".equals(order.status)) return order;
-    if (order.sessionId != null) return order;
-    // Stripe requires at least 30 minutes until expires_at on initial creation.
+    Order order = orders.createOrGet(userId, requestKey);
+    if (!"PENDING_PAYMENT".equals(order.status))
+      return order;
+    if (order.sessionId != null)
+      return order;
+    // Stripe 要求首次创建时，距离 expires_at 指定的过期时间至少还有 30 分钟。
     if (Instant.now().getEpochSecond() >= order.expiresAt - 1830) {
       throw new IllegalStateException("Checkout creation window expired; start a new purchase");
     }
@@ -74,18 +60,25 @@ public final class PaymentService {
                 .build())
             .build())
         .build();
-    // Stable per order, including retries after an uncertain network response.
-    Session session = gateway.create(params,
+    // 同一订单始终使用固定幂等键，未收到明确网络响应时重试也保持不变。
+    Session session = client.v1().checkout().sessions().create(params,
         RequestOptions.builder().setIdempotencyKey("checkout-" + order.id).build());
     validate(order, session);
-    if (session.getUrl() == null) throw new IllegalStateException("Missing Checkout URL");
+    if (session.getUrl() == null)
+      throw new IllegalStateException("Missing Checkout URL");
     orders.bindSession(order.id, session.getId(), session.getUrl());
     return orders.find(order.id);
   }
 
-  public Order getOrder(String owner, String id) throws Exception {
+  public Order getOrder(String userId, String id) throws Exception {
     Order order = orders.find(id);
-    return order != null && order.owner.equals(owner) ? order : null;
+    return order != null && userId != null && userId.equals(order.userId) ? order : null;
+  }
+
+  public List<Order> listOrders(String userId, int page) throws Exception {
+    if (page < 0 || page > 100000) throw new IllegalArgumentException("Invalid page");
+    // 多取一条用于判断是否还有下一页；归属来自已认证的用户 ID。
+    return userId == null ? List.of() : orders.findByUserId(userId, 21, page * 20);
   }
 
   public void webhook(String rawBody, String signature) throws Exception {
@@ -94,16 +87,21 @@ public final class PaymentService {
     if (!"checkout.session.completed".equals(type)
         && !"checkout.session.async_payment_succeeded".equals(type)
         && !"checkout.session.async_payment_failed".equals(type)
-        && !"checkout.session.expired".equals(type)) return;
-    // Only use the signed object's ID, then retrieve the latest state with our API credentials.
-    // Avoid unsafe deserialization when event and SDK API versions differ.
-    JsonObject object = JsonParser.parseString(event.getDataObjectDeserializer().getRawJson()).getAsJsonObject();
-    if (!"checkout.session".equals(object.get("object").getAsString())) {
+        && !"checkout.session.expired".equals(type))
+      return;
+    // 直接使用验签后的快照事件对象，不再请求 Stripe 查询 Session。
+    // Webhook API 版本需与 SDK 兼容；不兼容时拒绝处理，不强制反序列化。
+    StripeObject object = event.getDataObjectDeserializer().getObject()
+        .orElseThrow(() -> new IllegalStateException("Webhook API version is incompatible with the Stripe SDK"));
+    if (!(object instanceof Session)) {
       throw new IllegalArgumentException("Expected a Checkout Session");
     }
-    Session session = gateway.retrieve(object.get("id").getAsString());
+    Session session = (Session) object;
+
     Order order = orders.find(session.getClientReferenceId());
-    if (order == null) throw new IllegalArgumentException("Unknown order");
+    if (order == null)
+      throw new IllegalArgumentException("Unknown order");
+    // 验签确认“通知来自 Stripe、内容没被篡改”
     validate(order, session);
     String status = "PENDING_PAYMENT";
     String paymentStatus;

@@ -1,18 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>付款结果</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#23483f">
+  <title>付款结果 · 纸间书店</title>
   <link rel="stylesheet" href="style.css">
+  <script src="auth.js" defer></script>
   <script src="order.js" defer></script>
 </head>
 <body>
-  <section>
-    <h3>付款结果</h3>
-    <p id="order-status" role="status">正在查询订单…</p>
-    <p id="order-details"></p>
-    <button id="refresh-order" type="button">刷新状态</button>
-    <a href="checkout.html" id="new-purchase">返回商品页，开始新购买</a>
-  </section>
+  <header class="site-header wrap"><a class="brand" href="checkout.html" aria-label="纸间书店首页"><span class="brand-mark" aria-hidden="true">纸</span><span>纸间<span class="brand-en">PAPER & CO.</span></span></a><nav class="header-nav" aria-label="主导航"><a href="checkout.html">本期书选</a><a href="orders.html">我的订单</a><span id="account-menu" class="account-menu"></span></nav></header>
+  <main class="result-main wrap">
+    <div class="result-heading"><span class="eyebrow">YOUR ORDER / 付款结果</span><h1>每一份期待，<br><em>都值得认真确认。</em></h1><p>在这里查看你的订单与付款进度。</p></div>
+    <section class="result-card" data-state="loading" aria-labelledby="result-title">
+      <div class="result-topline"><span>订单状态</span><span class="state-pill" id="state-label">正在查询</span></div>
+      <div class="result-body"><div class="result-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path id="status-symbol" d="M12 7v5l3 2"/><circle cx="12" cy="12" r="9"/></svg></div><h2 id="result-title">正在确认付款结果</h2><p id="order-status" class="result-message" role="status" aria-live="polite">正在查询订单，请稍候…</p></div>
+      <div id="order-details" class="order-summary" hidden><div class="summary-item"><div class="mini-book" aria-hidden="true">STUBBORN<br>ATTACHMENTS</div><div><span class="eyebrow">PAPER & CO. / 订单商品</span><h3 id="order-product"></h3><span id="order-quantity" class="muted"></span></div><strong id="order-amount"></strong></div><dl class="order-meta"><div><dt>订单编号</dt><dd id="order-number"></dd></div><div><dt>支付方式</dt><dd>Stripe 托管收银台</dd></div></dl></div>
+      <div class="result-actions"><button class="button button-primary" id="refresh-order" type="button">刷新付款状态 <span aria-hidden="true">↻</span></button><a class="button button-secondary" href="checkout.html" id="new-purchase">返回书店</a></div>
+      <p class="result-footnote">付款确认后，此页面会自动更新。请以订单状态为准。</p>
+    </section>
+    <p class="below-card">留一点耐心，好消息正在路上。<span aria-hidden="true">✳</span></p>
+  </main>
+  <footer class="site-footer wrap"><span>© 2026 纸间 PAPER & CO.</span><span>给生活，留一页空白。</span><span>支付由 <strong>stripe</strong> 提供支持</span></footer>
 </body>
 </html>

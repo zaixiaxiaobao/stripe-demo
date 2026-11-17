@@ -1,94 +1,55 @@
-<project>
-<!-- model version - always 4.0.0 for Maven 2.x POMs -->
-<modelVersion>4.0.0</modelVersion>
-
-<!-- project coordinates - values which uniquely identify this project -->
-<groupId>com.stripe.sample</groupId>
-<artifactId>stripe-payment</artifactId>
-<version>1.0.0-SNAPSHOT</version>
-<properties>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.5.16</version>
+    <relativePath/>
+  </parent>
+  <groupId>com.stripe.sample</groupId>
+  <artifactId>stripe-payment</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <properties>
+    <java.version>21</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-</properties>
-
-<!-- library dependencies -->
-<dependencies>
+  </properties>
+  <dependencies>
     <dependency>
-        <groupId>com.h2database</groupId>
-        <artifactId>h2</artifactId>
-        <version>2.2.224</version>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
     <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.13.2</version>
-        <scope>test</scope>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
     <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-simple</artifactId>
-        <version>2.0.3</version>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <!-- 保留现有文件数据库版本，框架迁移不改变数据库格式。 -->
+      <version>2.2.224</version>
     </dependency>
     <dependency>
-        <groupId>com.sparkjava</groupId>
-        <artifactId>spark-core</artifactId>
-        <version>2.9.4</version>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
     </dependency>
     <dependency>
-        <groupId>com.google.code.gson</groupId>
-        <artifactId>gson</artifactId>
-        <version>2.9.1</version>
+      <groupId>com.stripe</groupId>
+      <artifactId>stripe-java</artifactId>
+      <version>34.0.0</version>
     </dependency>
-    <dependency>
-        <groupId>org.projectlombok</groupId>
-        <artifactId>lombok</artifactId>
-        <version>1.18.20</version>
-        <scope>provided</scope>
-    </dependency>
-    <dependency>
-        <groupId>com.stripe</groupId>
-        <artifactId>stripe-java</artifactId>
-        <version>34.0.0</version>
-    </dependency>
-</dependencies>
-<build>
+  </dependencies>
+  <build>
     <finalName>sample</finalName>
+    <resources>
+      <resource><directory>src/main/resources</directory></resource>
+      <!-- 前端打入 JAR，启动不再依赖外部 public 目录。 -->
+      <resource><directory>public</directory><targetPath>static</targetPath></resource>
+    </resources>
     <plugins>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <version>3.2.5</version>
-        </plugin>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.10.1</version>
-            <configuration>
-                <source>1.8</source>
-                <target>1.8</target>
-            </configuration>
-        </plugin>
-        <plugin>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <executions>
-            <execution>
-                <phase>package</phase>
-                <goals>
-                <goal>single</goal>
-                </goals>
-            </execution>
-            </executions>
-            <configuration>
-            <descriptorRefs>
-                <!-- This tells Maven to include all dependencies -->
-                <descriptorRef>jar-with-dependencies</descriptorRef>
-            </descriptorRefs>
-            <archive>
-                <manifest>
-                <mainClass>com.stripe.sample.Server</mainClass>
-                </manifest>
-            </archive>
-            </configuration>
-        </plugin>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
     </plugins>
-</build>
+  </build>
 </project>
